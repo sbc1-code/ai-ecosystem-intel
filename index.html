@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Ecosystem Intelligence</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0b0b0b;
+  --surface: #141414;
+  --border: #222;
+  --text: #e8e8e8;
+  --muted: #888;
+  --accent: #8a9a7b;
+  --accent-dim: rgba(138, 154, 123, 0.12);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --transition: 0.2s ease;
+}
+
+[data-theme="light"] {
+  --bg: #f5f3f0;
+  --surface: #fff;
+  --border: #d5d3cf;
+  --text: #1a1a1a;
+  --muted: #6b6b6b;
+  --accent: #5c6b50;
+  --accent-dim: rgba(92, 107, 80, 0.1);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--transition), color var(--transition);
+}
+
+/* Layout */
+.app { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-mark {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: #fff;
+  letter-spacing: -0.5px;
+}
+.logo-text h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+.logo-text span { font-size: 12px; color: var(--muted); }
+
+.header-actions { display: flex; align-items: center; gap: 12px; }
+
+.theme-toggle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all var(--transition);
+}
+.theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.theme-toggle svg { width: 18px; height: 18px; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 24px;
+  transition: all var(--transition);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Summary Stats */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all var(--transition);
+}
+.stat-card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.stat-card .value { font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+.stat-card .sub { font-size: 12px; color: var(--accent); margin-top: 4px; }
+
+/* Partner Cards */
+.partner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.partner-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+}
+.partner-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.partner-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+.partner-name { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+.partner-meta { display: flex; flex-direction: column; gap: 8px; }
+.meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.meta-label { color: var(--muted); }
+
+.badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.badge-strategic { background: var(--accent-dim); color: var(--accent); }
+.badge-growth { background: rgba(100, 149, 237, 0.12); color: #6495ed; }
+.badge-emerging { background: rgba(200, 160, 80, 0.12); color: #c8a050; }
+.badge-active { background: var(--accent-dim); color: var(--accent); }
+.badge-planning { background: rgba(100, 149, 237, 0.12); color: #6495ed; }
+.badge-prospect { background: rgba(200, 160, 80, 0.12); color: #c8a050; }
+
+/* Detail Panel */
+.detail-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  justify-content: flex-end;
+  animation: fadeIn 0.15s ease;
+}
+.detail-overlay.open { display: flex; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+.detail-panel {
+  width: 440px;
+  max-width: 90vw;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  padding: 32px;
+  overflow-y: auto;
+  animation: slideIn 0.2s ease;
+}
+
+.detail-panel h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
+.detail-panel .detail-tier { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+.detail-section { margin-bottom: 24px; }
+.detail-section h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-metric {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+}
+.detail-metric .dm-label { color: var(--muted); }
+.detail-metric .dm-value { font-weight: 600; }
+
+.detail-campaigns { list-style: none; }
+.detail-campaigns li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+}
+.detail-campaigns li:last-child { border-bottom: none; }
+
+.detail-contacts { list-style: none; }
+.detail-contacts li { padding: 6px 0; font-size: 13px; color: var(--muted); }
+.detail-contacts li span { color: var(--text); font-weight: 500; }
+
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 18px;
+  transition: all var(--transition);
+}
+.close-btn:hover { border-color: var(--accent); color: var(--text); }
+
+/* Tracker Table */
+.filters-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.filter-select:focus { outline: none; border-color: var(--accent); }
+
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: all var(--transition);
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--accent-dim); }
+
+.status-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.status-live { background: var(--accent); }
+.status-scheduled { background: #6495ed; }
+.status-draft { background: #c8a050; }
+.status-completed { background: var(--muted); }
+
+.totals-row td { font-weight: 700; border-top: 2px solid var(--border); background: var(--accent-dim); }
+
+/* Health Dashboard */
+.health-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: all var(--transition);
+}
+.chart-card.full-width { grid-column: 1 / -1; }
+.chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+
+.health-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.h-metric {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  transition: all var(--transition);
+}
+.h-metric .hm-value { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+.h-metric .hm-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Tab Content */
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.2s ease; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .app { padding: 16px; }
+  .partner-grid { grid-template-columns: 1fr; }
+  .health-grid { grid-template-columns: 1fr; }
+  .health-metrics { grid-template-columns: repeat(2, 1fr); }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .detail-panel { width: 100%; }
+  table { font-size: 12px; }
+  thead th, tbody td { padding: 8px 10px; }
+}
+
+@media (max-width: 480px) {
+  .tabs { flex-direction: column; }
+  .health-metrics { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-mark">AI</div>
+      <div class="logo-text">
+        <h1>AI Ecosystem Intelligence</h1>
+        <span>Partnership analytics and co-marketing ops</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg id="moonIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="landscape">Partner Landscape</button>
+    <button class="tab" data-tab="tracker">Co-Marketing Tracker</button>
+    <button class="tab" data-tab="health">Ecosystem Health</button>
+  </div>
+
+  <!-- Tab 1: Partner Landscape -->
+  <div class="tab-content active" id="landscape">
+    <div class="stats-row" id="landscapeStats"></div>
+    <div class="partner-grid" id="partnerGrid"></div>
+  </div>
+
+  <!-- Tab 2: Co-Marketing Tracker -->
+  <div class="tab-content" id="tracker">
+    <div class="stats-row" id="trackerStats"></div>
+    <div class="filters-row">
+      <select class="filter-select" id="filterPartner"><option value="">All Partners</option></select>
+      <select class="filter-select" id="filterType"><option value="">All Types</option></select>
+      <select class="filter-select" id="filterStatus"><option value="">All Statuses</option></select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th>Partner</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Launch Date</th>
+            <th>Leads</th>
+            <th>Pipeline</th>
+          </tr>
+        </thead>
+        <tbody id="campaignTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tab 3: Ecosystem Health -->
+  <div class="tab-content" id="health">
+    <div class="health-metrics" id="healthMetrics"></div>
+    <div class="health-grid">
+      <div class="chart-card full-width">
+        <h3>Ecosystem Pipeline Trend (Quarterly)</h3>
+        <canvas id="pipelineChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Leads by Partner (Last 6 Months)</h3>
+        <canvas id="leadsChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Campaigns by Type</h3>
+        <canvas id="typeChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Panel Overlay -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-panel" id="detailPanel" style="position:relative">
+    <button class="close-btn" id="closeDetail">&times;</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<script>
+// ========== DATA ==========
+const partners = [
+  {
+    name: "OpenAI",
+    tier: "Strategic",
+    integration: "MCP + API",
+    dataSources: 142,
+    coMarketing: "Active",
+    depthScore: 92,
+    revenueInfluence: "$2.4M",
+    contacts: [
+      { name: "Jordan Ellis", role: "Head of Partnerships" },
+      { name: "Priya Nair", role: "Solutions Architect" }
+    ],
+    campaigns: ["Enterprise Data Summit Keynote", "GPT Connector Series"],
+    pipelineInfluenced: "$3.1M"
+  },
+  {
+    name: "Anthropic",
+    tier: "Strategic",
+    integration: "MCP",
+    dataSources: 118,
+    coMarketing: "Active",
+    depthScore: 88,
+    revenueInfluence: "$1.8M",
+    contacts: [
+      { name: "Marcus Tan", role: "Ecosystem Lead" },
+      { name: "Lisa Okafor", role: "Technical PM" }
+    ],
+    campaigns: ["MCP Launch Webinar", "Claude Connector Docs Sprint"],
+    pipelineInfluenced: "$2.6M"
+  },
+  {
+    name: "Google AI",
+    tier: "Strategic",
+    integration: "API + SDK",
+    dataSources: 156,
+    coMarketing: "Active",
+    depthScore: 85,
+    revenueInfluence: "$2.1M",
+    contacts: [
+      { name: "David Park", role: "Partner Engineering" },
+      { name: "Sarah Montoya", role: "Co-Marketing Manager" }
+    ],
+    campaigns: ["Vertex AI Integration Guide", "Google Cloud Next Booth"],
+    pipelineInfluenced: "$2.8M"
+  },
+  {
+    name: "Microsoft Copilot",
+    tier: "Strategic",
+    integration: "API + SDK",
+    dataSources: 168,
+    coMarketing: "Active",
+    depthScore: 90,
+    revenueInfluence: "$2.7M",
+    contacts: [
+      { name: "Alex Rivera", role: "ISV Partnerships" },
+      { name: "Chen Wei", role: "Copilot Ecosystem" }
+    ],
+    campaigns: ["Copilot Data Access Webinar", "Ignite Demo Session"],
+    pipelineInfluenced: "$3.4M"
+  },
+  {
+    name: "AWS Bedrock",
+    tier: "Growth",
+    integration: "API",
+    dataSources: 134,
+    coMarketing: "Planning",
+    depthScore: 72,
+    revenueInfluence: "$980K",
+    contacts: [
+      { name: "Rachel Kim", role: "Partner Solutions Architect" }
+    ],
+    campaigns: ["Bedrock Connector Beta Docs"],
+    pipelineInfluenced: "$1.4M"
+  },
+  {
+    name: "Databricks",
+    tier: "Growth",
+    integration: "MCP + API",
+    dataSources: 96,
+    coMarketing: "Planning",
+    depthScore: 68,
+    revenueInfluence: "$720K",
+    contacts: [
+      { name: "Tom Andersen", role: "Technology Alliances" }
+    ],
+    campaigns: ["Unity Catalog Deep Dive"],
+    pipelineInfluenced: "$1.1M"
+  },
+  {
+    name: "Palantir",
+    tier: "Emerging",
+    integration: "API",
+    dataSources: 48,
+    coMarketing: "Prospect",
+    depthScore: 41,
+    revenueInfluence: "$340K",
+    contacts: [
+      { name: "Nadia Petrov", role: "Partnerships, AIP" }
+    ],
+    campaigns: [],
+    pipelineInfluenced: "$520K"
+  }
+];
+
+const campaigns = [
+  { name: "Enterprise Data Summit Keynote", partner: "OpenAI", type: "Event", status: "Completed", date: "2025-11-14", leads: 312, pipeline: 840000 },
+  { name: "GPT Connector Series", partner: "OpenAI", type: "Content", status: "Live", date: "2026-01-20", leads: 187, pipeline: 520000 },
+  { name: "MCP Launch Webinar", partner: "Anthropic", type: "Webinar", status: "Completed", date: "2025-12-05", leads: 245, pipeline: 690000 },
+  { name: "Claude Connector Docs Sprint", partner: "Anthropic", type: "Content", status: "Live", date: "2026-02-10", leads: 89, pipeline: 210000 },
+  { name: "Vertex AI Integration Guide", partner: "Google AI", type: "Content", status: "Completed", date: "2025-10-22", leads: 156, pipeline: 430000 },
+  { name: "Google Cloud Next Booth", partner: "Google AI", type: "Event", status: "Scheduled", date: "2026-04-09", leads: 0, pipeline: 0 },
+  { name: "Copilot Data Access Webinar", partner: "Microsoft Copilot", type: "Webinar", status: "Completed", date: "2025-09-18", leads: 278, pipeline: 760000 },
+  { name: "Ignite Demo Session", partner: "Microsoft Copilot", type: "Event", status: "Completed", date: "2025-11-20", leads: 198, pipeline: 540000 },
+  { name: "Bedrock Connector Beta Docs", partner: "AWS Bedrock", type: "Content", status: "Draft", date: "2026-03-15", leads: 0, pipeline: 0 },
+  { name: "Unity Catalog Deep Dive", partner: "Databricks", type: "Webinar", status: "Scheduled", date: "2026-04-22", leads: 0, pipeline: 0 },
+  { name: "350+ Connectors for AI Agents", partner: "OpenAI", type: "Case Study", status: "Live", date: "2026-02-28", leads: 134, pipeline: 380000 },
+  { name: "MCP Server Architecture Brief", partner: "Anthropic", type: "Case Study", status: "Draft", date: "2026-03-20", leads: 0, pipeline: 0 }
+];
+
+// ========== THEME ==========
+function initTheme() {
+  const stored = localStorage.getItem("ai-eco-theme");
+  if (stored) {
+    setTheme(stored);
+  } else {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setTheme(prefersDark ? "dark" : "light");
+  }
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("ai-eco-theme", theme);
+  document.getElementById("moonIcon").style.display = theme === "dark" ? "block" : "none";
+  document.getElementById("sunIcon").style.display = theme === "light" ? "block" : "none";
+  // Re-render charts if they exist
+  if (window.chartsRendered) renderCharts();
+}
+
+document.getElementById("themeToggle").addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  setTheme(current === "dark" ? "light" : "dark");
+});
+
+// ========== TABS ==========
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.tab).classList.add("active");
+    if (tab.dataset.tab === "health" && !window.chartsRendered) {
+      renderCharts();
+      window.chartsRendered = true;
+    }
+  });
+});
+
+// ========== HELPERS ==========
+function formatCurrency(val) {
+  if (val >= 1000000) return "$" + (val / 1000000).toFixed(1) + "M";
+  if (val >= 1000) return "$" + (val / 1000).toFixed(0) + "K";
+  return "$" + val;
+}
+
+function tierBadge(tier) {
+  const cls = { Strategic: "badge-strategic", Growth: "badge-growth", Emerging: "badge-emerging" };
+  return `<span class="badge ${cls[tier] || ''}">${tier}</span>`;
+}
+
+function statusBadge(status) {
+  const cls = { Active: "badge-active", Planning: "badge-planning", Prospect: "badge-prospect" };
+  return `<span class="badge ${cls[status] || ''}">${status}</span>`;
+}
+
+function statusDot(status) {
+  const s = status.toLowerCase();
+  return `<span class="status-dot status-${s}"></span>${status}`;
+}
+
+// ========== TAB 1: PARTNER LANDSCAPE ==========
+function renderLandscape() {
+  const activeCoMarketing = partners.filter(p => p.coMarketing === "Active").length;
+  const totalPipeline = partners.reduce((sum, p) => {
+    const val = parseFloat(p.pipelineInfluenced.replace(/[$MK,]/g, ''));
+    const mult = p.pipelineInfluenced.includes("M") ? 1000000 : p.pipelineInfluenced.includes("K") ? 1000 : 1;
+    return sum + val * mult;
+  }, 0);
+
+  document.getElementById("landscapeStats").innerHTML = `
+    <div class="stat-card">
+      <div class="label">Total Partners</div>
+      <div class="value">${partners.length}</div>
+      <div class="sub">${partners.filter(p=>p.tier==="Strategic").length} strategic</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Active Co-Marketing</div>
+      <div class="value">${activeCoMarketing}</div>
+      <div class="sub">${partners.filter(p=>p.coMarketing==="Planning").length} in planning</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Pipeline Influenced</div>
+      <div class="value">${formatCurrency(totalPipeline)}</div>
+      <div class="sub">across all partners</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Data Sources Connected</div>
+      <div class="value">${partners.reduce((s,p)=>s+p.dataSources,0)}</div>
+      <div class="sub">avg ${Math.round(partners.reduce((s,p)=>s+p.dataSources,0)/partners.length)} per partner</div>
+    </div>
+  `;
+
+  document.getElementById("partnerGrid").innerHTML = partners.map((p, i) => `
+    <div class="partner-card" data-index="${i}">
+      <div class="partner-name">${p.name}</div>
+      <div class="partner-meta">
+        <div class="meta-row"><span class="meta-label">Tier</span>${tierBadge(p.tier)}</div>
+        <div class="meta-row"><span class="meta-label">Integration</span><span>${p.integration}</span></div>
+        <div class="meta-row"><span class="meta-label">Data Sources</span><span>${p.dataSources}</span></div>
+        <div class="meta-row"><span class="meta-label">Co-Marketing</span>${statusBadge(p.coMarketing)}</div>
+      </div>
+    </div>
+  `).join("");
+
+  document.querySelectorAll(".partner-card").forEach(card => {
+    card.addEventListener("click", () => openDetail(parseInt(card.dataset.index)));
+  });
+}
+
+function openDetail(index) {
+  const p = partners[index];
+  const partnerCampaigns = campaigns.filter(c => c.partner === p.name);
+
+  document.querySelectorAll(".partner-card").forEach(c => c.classList.remove("selected"));
+  document.querySelector(`.partner-card[data-index="${index}"]`).classList.add("selected");
+
+  document.getElementById("detailContent").innerHTML = `
+    <h2>${p.name}</h2>
+    <div class="detail-tier">${p.tier} Partner | ${p.integration}</div>
+
+    <div class="detail-section">
+      <h3>Key Metrics</h3>
+      <div class="detail-metric"><span class="dm-label">Integration Depth Score</span><span class="dm-value">${p.depthScore}/100</span></div>
+      <div class="detail-metric"><span class="dm-label">Revenue Influence</span><span class="dm-value">${p.revenueInfluence}</span></div>
+      <div class="detail-metric"><span class="dm-label">Pipeline Influenced</span><span class="dm-value">${p.pipelineInfluenced}</span></div>
+      <div class="detail-metric"><span class="dm-label">Data Sources</span><span class="dm-value">${p.dataSources}</span></div>
+      <div class="detail-metric"><span class="dm-label">Co-Marketing Status</span><span class="dm-value">${p.coMarketing}</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Key Contacts</h3>
+      <ul class="detail-contacts">
+        ${p.contacts.map(c => `<li><span>${c.name}</span> | ${c.role}</li>`).join("")}
+      </ul>
+    </div>
+
+    <div class="detail-section">
+      <h3>Active Campaigns (${partnerCampaigns.length})</h3>
+      ${partnerCampaigns.length
+        ? `<ul class="detail-campaigns">${partnerCampaigns.map(c => `<li><span>${c.name}</span><span class="badge badge-${c.status === 'Live' ? 'active' : c.status === 'Completed' ? 'strategic' : c.status === 'Scheduled' ? 'planning' : 'emerging'}">${c.status}</span></li>`).join("")}</ul>`
+        : `<p style="font-size:13px;color:var(--muted)">No campaigns yet. Opportunity to initiate co-marketing.</p>`
+      }
+    </div>
+  `;
+
+  document.getElementById("detailOverlay").classList.add("open");
+}
+
+document.getElementById("closeDetail").addEventListener("click", () => {
+  document.getElementById("detailOverlay").classList.remove("open");
+  document.querySelectorAll(".partner-card").forEach(c => c.classList.remove("selected"));
+});
+
+document.getElementById("detailOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("detailOverlay")) {
+    document.getElementById("detailOverlay").classList.remove("open");
+    document.querySelectorAll(".partner-card").forEach(c => c.classList.remove("selected"));
+  }
+});
+
+// ========== TAB 2: CO-MARKETING TRACKER ==========
+function renderTracker() {
+  // Populate filter options
+  const partnerNames = [...new Set(campaigns.map(c => c.partner))];
+  const types = [...new Set(campaigns.map(c => c.type))];
+  const statuses = [...new Set(campaigns.map(c => c.status))];
+
+  const filterPartner = document.getElementById("filterPartner");
+  const filterType = document.getElementById("filterType");
+  const filterStatus = document.getElementById("filterStatus");
+
+  partnerNames.forEach(p => { filterPartner.innerHTML += `<option value="${p}">${p}</option>`; });
+  types.forEach(t => { filterType.innerHTML += `<option value="${t}">${t}</option>`; });
+  statuses.forEach(s => { filterStatus.innerHTML += `<option value="${s}">${s}</option>`; });
+
+  renderCampaignTable();
+
+  filterPartner.addEventListener("change", renderCampaignTable);
+  filterType.addEventListener("change", renderCampaignTable);
+  filterStatus.addEventListener("change", renderCampaignTable);
+}
+
+function renderCampaignTable() {
+  const fp = document.getElementById("filterPartner").value;
+  const ft = document.getElementById("filterType").value;
+  const fs = document.getElementById("filterStatus").value;
+
+  let filtered = campaigns.filter(c =>
+    (!fp || c.partner === fp) &&
+    (!ft || c.type === ft) &&
+    (!fs || c.status === fs)
+  );
+
+  const totalLeads = filtered.reduce((s, c) => s + c.leads, 0);
+  const totalPipeline = filtered.reduce((s, c) => s + c.pipeline, 0);
+
+  // Update tracker stats
+  document.getElementById("trackerStats").innerHTML = `
+    <div class="stat-card">
+      <div class="label">Total Campaigns</div>
+      <div class="value">${filtered.length}</div>
+      <div class="sub">${filtered.filter(c=>c.status==="Live").length} live now</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Leads Generated</div>
+      <div class="value">${totalLeads.toLocaleString()}</div>
+      <div class="sub">from ${filtered.filter(c=>c.leads>0).length} campaigns</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Pipeline Value</div>
+      <div class="value">${formatCurrency(totalPipeline)}</div>
+      <div class="sub">avg ${filtered.filter(c=>c.pipeline>0).length ? formatCurrency(Math.round(totalPipeline / filtered.filter(c=>c.pipeline>0).length)) : "$0"} per campaign</div>
+    </div>
+  `;
+
+  const tbody = document.getElementById("campaignTable");
+  tbody.innerHTML = filtered.map(c => `
+    <tr>
+      <td style="font-weight:500">${c.name}</td>
+      <td>${c.partner}</td>
+      <td>${c.type}</td>
+      <td>${statusDot(c.status)}</td>
+      <td>${c.date}</td>
+      <td>${c.leads > 0 ? c.leads.toLocaleString() : "-"}</td>
+      <td>${c.pipeline > 0 ? formatCurrency(c.pipeline) : "-"}</td>
+    </tr>
+  `).join("");
+
+  // Totals row
+  if (filtered.length > 0) {
+    tbody.innerHTML += `
+      <tr class="totals-row">
+        <td colspan="5">Totals (${filtered.length} campaigns)</td>
+        <td>${totalLeads.toLocaleString()}</td>
+        <td>${formatCurrency(totalPipeline)}</td>
+      </tr>
+    `;
+  }
+}
+
+// ========== TAB 3: ECOSYSTEM HEALTH ==========
+let chartInstances = {};
+
+function renderCharts() {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  const gridColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)";
+  const textColor = isDark ? "#888" : "#6b6b6b";
+  const accent = isDark ? "#8a9a7b" : "#5c6b50";
+
+  Chart.defaults.color = textColor;
+  Chart.defaults.borderColor = gridColor;
+  Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+
+  // Health metrics
+  document.getElementById("healthMetrics").innerHTML = `
+    <div class="h-metric"><div class="hm-value">1,599</div><div class="hm-label">Ecosystem Leads</div></div>
+    <div class="h-metric"><div class="hm-value">$4.4M</div><div class="hm-label">Pipeline Value</div></div>
+    <div class="h-metric"><div class="hm-value">34%</div><div class="hm-label">Partner Lead Win Rate</div></div>
+    <div class="h-metric"><div class="hm-value">$48K</div><div class="hm-label">Avg Deal Size</div></div>
+  `;
+
+  // Destroy existing
+  Object.values(chartInstances).forEach(c => c.destroy());
+
+  // Pipeline Trend (Line)
+  chartInstances.pipeline = new Chart(document.getElementById("pipelineChart"), {
+    type: "line",
+    data: {
+      labels: ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Q1 2026"],
+      datasets: [{
+        label: "Pipeline ($)",
+        data: [620000, 890000, 1240000, 1680000, 2100000],
+        borderColor: accent,
+        backgroundColor: accent + "22",
+        fill: true,
+        tension: 0.35,
+        pointBackgroundColor: accent,
+        pointRadius: 5,
+        pointHoverRadius: 7
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          grid: { color: gridColor },
+          ticks: { callback: v => formatCurrency(v) }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Leads by Partner (Bar)
+  const partnerLeads = {};
+  campaigns.forEach(c => { partnerLeads[c.partner] = (partnerLeads[c.partner] || 0) + c.leads; });
+  const sortedPartners = Object.entries(partnerLeads).sort((a,b) => b[1] - a[1]);
+
+  chartInstances.leads = new Chart(document.getElementById("leadsChart"), {
+    type: "bar",
+    data: {
+      labels: sortedPartners.map(p => p[0]),
+      datasets: [{
+        label: "Leads",
+        data: sortedPartners.map(p => p[1]),
+        backgroundColor: [
+          accent,
+          accent + "cc",
+          accent + "aa",
+          accent + "88",
+          accent + "66",
+          accent + "44",
+          accent + "22"
+        ],
+        borderRadius: 6,
+        barThickness: 32
+      }]
+    },
+    options: {
+      responsive: true,
+      indexAxis: "y",
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Campaigns by Type (Donut)
+  const typeCount = {};
+  campaigns.forEach(c => { typeCount[c.type] = (typeCount[c.type] || 0) + 1; });
+
+  chartInstances.types = new Chart(document.getElementById("typeChart"), {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(typeCount),
+      datasets: [{
+        data: Object.values(typeCount),
+        backgroundColor: [
+          accent,
+          "#6495ed",
+          "#c8a050",
+          isDark ? "#555" : "#aaa",
+          accent + "88"
+        ],
+        borderColor: isDark ? "#141414" : "#fff",
+        borderWidth: 3
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: "60%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { padding: 16, usePointStyle: true, pointStyle: "circle" }
+        }
+      }
+    }
+  });
+}
+
+// ========== INIT ==========
+initTheme();
+renderLandscape();
+renderTracker();
+</script>
+</body>
+</html>
